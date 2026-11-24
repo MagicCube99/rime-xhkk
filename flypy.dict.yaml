@@ -1,0 +1,61 @@
+# Rime dictionary
+# encoding: utf-8
+#
+# 凇鹤拼音 - 小鹤音形词库总索引
+# 来源：官方小鹤音形_清风便携版 v1.26.9c
+#
+# 词库模式说明（对齐官方说明）：
+# ① 熟手词库模式（默认推荐）：首选 + 分类词库（次选/随心/表外）+ 一简次选 + 快符
+# ② 常规词库模式：① + 全码词
+# ③ 初学词库模式：② + 全码字 + 生僻字
+
+---
+name: flypy
+version: "v1.26.9c"
+sort: original
+encoder:
+  exclude_patterns:
+    - '^`.*$'
+  rules:
+    - length_equal: 2
+      formula: "AaAbBaBb"
+    - length_equal: 3
+      formula: "AaBaCaCb"
+    - length_in_range: [4, 14]
+      formula: "AaBaCaZa"
+
+import_tables:
+  # --- 用户置顶与专属人名层（最高优先级）---
+  - "flypy_dicts/flypy.user.top"          # 用户置顶码表（全码防错与核心词绝对置顶）
+  - "flypy_dicts/flypy.names"             # 专属人名词库（本地私有脱敏，新机可复制 .example）
+
+  # --- ① 熟手模式基础库（官方原生自然序，日常高频词绝对优先）---
+  - "flypy_dicts/flypy.primary"           # -0- 首选字词（68,572条，官方原生自然序）
+
+  # --- 专业与自用扩展词库（不重码时自动上屏，偶有重码排在官方首选之后）---
+  - "flypy_dicts/flypy.custom"            # 专属自用词库（方案B层级回归：重码让位于官方核心词）
+  - "flypy_dicts/flypy.official"          # 专属公文政务高频四字词库（顶层设计/全面推进/多措并举等）
+  - "flypy_dicts/flypy.it"                # 专属 IT 行业词库（开发/架构/运维/网安/信创）
+  - "flypy_dicts/flypy.secondary"         # 1.1 次选字词（分类词库：次选）
+  - "flypy_dicts/flypy.whimsicality"      # 1.1 随心码（分类词库：随心）
+  - "flypy_dicts/flypy.off-table"         # 2.2 表外字（分类词库：表外）
+  - "flypy_dicts/flypy.single.code"       # 2.1 一简词（一简次选，26个单字/词）
+  - "flypy_dicts/flypy.secondary.simple"  # 二简次选（66个单字，备选）
+  - "flypy_dicts/flypy.fast.symbols"      # 1.2 快符（分号引导符号）
+  - "flypy_dicts/flypy.user"              # 用户自用词库
+
+  # --- ② 常规模式扩展（已有简码的全码词）---
+  - "flypy_dicts/flypy.full.code.words"   # 2.3 全码词（约500条）
+
+  # --- 基础地名扩展库（9,300+条全国省市县区+乡镇，重码排在常规全码常用词之后）---
+  - "flypy_dicts/flypy.places"            # 标准地名词库（全国省市县区+浙江乡镇街道）
+
+  # --- ③ 全码字保底库（已有简码的高频单字，打全码时提供次选兜底出字）---
+  - "flypy_dicts/flypy.full.code.chars"   # 全码字（约1650条，前500高频字打全码不卡壳）
+  # - "flypy_dicts/flypy.rare.chars"        # 生僻字（约500条）
+
+  # --- 可选附加库 ---
+  # - "flypy_dicts/flypy.symbols"           # 符号与部首字根
+  # - "flypy_dicts/flypy.emoji"             # 斜杠引导表情
+  # - "flypy_dicts/flypy.ok"                # ok引导两分/三分拆字拼字库（8.8万条）
+...

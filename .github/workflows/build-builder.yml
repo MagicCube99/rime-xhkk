@@ -1,0 +1,54 @@
+name: Build xhkk-builder
+
+on:
+  push:
+    paths:
+      - 'tools/xhkk-builder/**'
+      - '.github/workflows/build-builder.yml'
+    branches:
+      - '**'
+  pull_request:
+    paths:
+      - 'tools/xhkk-builder/**'
+      - '.github/workflows/build-builder.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Windows Binary
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          check-latest: true
+          cache-dependency-path: tools/xhkk-builder/go.sum
+
+      - name: Run Tests
+        working-directory: tools/xhkk-builder
+        run: go test ./... -v
+
+      - name: Build xhkk-builder executable
+        working-directory: tools/xhkk-builder
+        run: |
+          go build -ldflags="-s -w -H=windowsgui" -o xhkk-builder.exe ./cmd/builder
+        env:
+          CGO_ENABLED: '0'
+
+      - name: Compress executable with UPX
+        working-directory: tools/xhkk-builder
+        run: |
+          choco install upx --no-progress
+          upx -9 xhkk-builder.exe
+
+      - name: Upload xhkk-builder Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xhkk-builder-windows-amd64
+          path: tools/xhkk-builder/xhkk-builder.exe
+          if-no-files-found: error

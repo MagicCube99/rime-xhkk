@@ -1,0 +1,71 @@
+# Rime dictionary
+# encoding: utf-8
+#
+# 专属置顶词库（示例模板）
+# 使用说明：
+# 1. 复制本文件并重命名为 flypy.user.top.dict.yaml（该真实文件已被 .gitignore 隔离，不会推送到公网）
+# 2. 本词库处于 Rime 挂载的最顶层，拥有最高优先级，用于：
+#    - 解决全码防错（如打 wwrr 微软、wwxb 微信、lmjp 链接，避免被原版冷门词争抢）
+#    - 对高频核心词进行强行置顶（如 hyjy 会议纪要 压倒昏君）
+# 3. 词条与编码之间请务必使用 Tab 制表符（\t）分隔
+#
+
+---
+name: flypy.user.top
+version: "1.0"
+sort: by_weight
+use_preset_vocabulary: false
+...
+
+# 官方全码防错置顶词示例
+按时	anui
+按到	andc
+而是	erui
+反应	fjyk
+成为	igww
+传统	irts
+即可	jike
+简单	jmdj
+计算	jisr
+简直	jmvi
+极其	jiqi
+联系	lmxi
+每周	mwvz
+美丽	mwli
+期间	qijm
+任务	rfwu
+台湾	tdwj
+时间	uijm
+水平	uvpk
+试试	uiui
+神似	ufsi
+知道	vidc
+只能	ving
+只是	viui
+只会	vihv
+修正	xqvg
+小时	xnui
+现金	xmjb
+一下	yixx
+一直	yivi
+一片	yipm
+在线	zdxm
+微软	wwrr
+位置	wwvi
+想想	xlxl
+无线	wuxm
+事半功倍	ubgb
+微信	wwxb
+链接	lmjp
+不再	buzd
+达到	dadc
+回复	hvfu
+统一	tsyi
+五笔	wubi
+暗自	anzi
+按理	anli
+主意	vuyi
+意志	yivi
+会议纪要	hyjy
+支付宝	vfbc
+京东	jkds

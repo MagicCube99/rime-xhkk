@@ -1,0 +1,28 @@
+# Private personal dictionaries (方案 B：人名、自用词与置顶词库本地保留，不推送到公开远程仓库)
+flypy_dicts/flypy.names.dict.yaml
+flypy_dicts/flypy.custom.dict.yaml
+flypy_dicts/flypy.user.top.dict.yaml
+
+# Rime build cache and temporary artifacts
+build/
+*.bin
+*.userdb/
+*.userdb.kct
+*.userdb.kch
+*.userdb.txt
+*.reverse.bin
+*.table.bin
+*.prism.bin
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# SDD scratch & build artifacts
+.superpowers/
+docs/
+.oil-ui/
+*.upx
+tools/*.dict.yaml
