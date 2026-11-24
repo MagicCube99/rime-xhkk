@@ -69,3 +69,14 @@ use_preset_vocabulary: false
 会议纪要	hyjy
 支付宝	vfbc
 京东	jkds
+
+# 现代超高频核心词影子置顶（解决频度倒挂）
+微信	wx
+数字化	uzhx
+包邮	bcyz
+云计算	yjsr
+大数据	duju
+元宇宙	yyvz
+短视频	dupb
+区块链	qklm
+低碳	ditj

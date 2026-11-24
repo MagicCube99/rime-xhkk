@@ -11,7 +11,7 @@
 
 ---
 name: flypy
-version: "v1.26.9e"
+version: "v1.26.9g"
 sort: original
 encoder:
   exclude_patterns:
