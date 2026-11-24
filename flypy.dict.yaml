@@ -11,7 +11,7 @@
 
 ---
 name: flypy
-version: "v1.26.9c"
+version: "v1.26.9d"
 sort: original
 encoder:
   exclude_patterns:
@@ -36,6 +36,7 @@ import_tables:
   - "flypy_dicts/flypy.custom"            # 专属自用词库（方案B层级回归：重码让位于官方核心词）
   - "flypy_dicts/flypy.official"          # 专属公文政务高频四字词库（顶层设计/全面推进/多措并举等）
   - "flypy_dicts/flypy.it"                # 专属 IT 行业词库（开发/架构/运维/网安/信创）
+  - "flypy_dicts/flypy.modern"            # 专属现代科技与生活词库（阶段二成果：100% 绝对空码纯增益）
   - "flypy_dicts/flypy.secondary"         # 1.1 次选字词（分类词库：次选）
   - "flypy_dicts/flypy.whimsicality"      # 1.1 随心码（分类词库：随心）
   - "flypy_dicts/flypy.off-table"         # 2.2 表外字（分类词库：表外）
