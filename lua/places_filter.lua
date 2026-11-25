@@ -77,4 +77,10 @@ local function places_filter(input, env)
     end
 end
 
-return { filter = places_filter }
+local M = {
+    init = function(env) end,
+    func = places_filter,
+    filter = places_filter,
+}
+
+return M
