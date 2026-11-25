@@ -23,7 +23,7 @@ DICTS_DIR = REPO_ROOT / "flypy_dicts"
 ASSETS_DIR = REPO_ROOT / "tools" / "xhkk-builder" / "pkg" / "encoder" / "assets"
 FLYPYDZ_PATH = REPO_ROOT / "flypydz.dict.yaml"
 
-# 字典挂载优先级定义（数字越小优先级越高，对齐 flypy.dict.yaml）
+# 字典挂载优先级定义（数字越小优先级越高，对齐 flypy.dict.yaml 的 import_tables 顺序）
 DICT_PRIORITY = {
     "flypy.user.top": 1,
     "flypy.names": 2,
@@ -31,17 +31,23 @@ DICT_PRIORITY = {
     "flypy.custom": 4,
     "flypy.official": 5,
     "flypy.it": 6,
-    "flypy.secondary": 7,
-    "flypy.whimsicality": 8,
-    "flypy.off-table": 9,
-    "flypy.single.code": 10,
-    "flypy.secondary.simple": 11,
-    "flypy.fast.symbols": 12,
-    "flypy.user": 13,
-    "flypy.full.code.words": 14,
-    "flypy.places": 15,
+    "flypy.modern": 7,
+    "flypy.secondary": 8,
+    "flypy.whimsicality": 9,
+    "flypy.off-table": 10,
+    "flypy.single.code": 11,
+    "flypy.secondary.simple": 12,
+    "flypy.fast.symbols": 13,
+    "flypy.user": 14,
+    "flypy.full.code.words": 15,
     "flypy.full.code.chars": 16,
+    # places 由独立 lua_translator 挂载（initial_quality: -2），不在主表 import_tables 内
+    "flypy.places": 99,
 }
+
+# 真实生效的词库层：import_tables 挂载层 + 独立翻译器（places）。
+# 未挂载的 ok 拆字库、生僻字、符号、表情不得参与重码统计。
+ACTIVE_DICTS = set(DICT_PRIORITY)
 
 
 class FlypyEncoder:
@@ -236,12 +242,18 @@ class CorpusDatabase:
             return
 
         dict_files = sorted(DICTS_DIR.glob("*.dict.yaml"))
+        # places 由独立 lua_translator 从用户目录根挂载，不在 flypy_dicts/ 内
+        root_places = REPO_ROOT / "flypy.places.dict.yaml"
+        if root_places.exists():
+            dict_files.append(root_places)
         for df in dict_files:
             # 排除模板文件
             if df.name.endswith(".example"):
                 continue
 
             dict_stem = df.name.replace(".dict.yaml", "").replace(".yaml", "")
+            if dict_stem not in ACTIVE_DICTS:
+                continue
             with open(df, "r", encoding="utf-8") as f:
                 in_body = False
                 for line_num, line in enumerate(f, 1):
@@ -388,11 +400,23 @@ def run_unit_tests():
     assert verdict == ADMISSION_REVIEW, f"菜单码新增应人工复核, 实际 {verdict}"
 
     # 真实词库端到端
+    res = db.assess_admission("机赏")
+    assert res["code"] == "jiuh" and res["verdict"] == ADMISSION_BLOCK, f"机赏应因 jiuh 唯一候选被拦截: {res}"
     res = db.assess_admission("宝安")
-    assert res["code"] == "bcan" and res["verdict"] == ADMISSION_BLOCK, f"宝安应因 bcan 唯一候选被拦截: {res}"
+    assert res["verdict"] == ADMISSION_ALLOW, f"宝安已在 places 词库中，应幂等放行: {res}"
     res = db.assess_admission("微信")
     assert res["verdict"] == ADMISSION_ALLOW, f"微信为既有词条应放行: {res}"
     print("[PASS] 加词准入闸门（空码放行 / 唯一码拦截 / 菜单码复核）全部验证通过！\n")
+
+    # 6. 词库挂载面测试（只统计真实生效的词库层，排除未挂载的 ok/生僻字/符号/表情）
+    active_names = {e.dict_name for entries in db.code_to_entries.values() for e in entries}
+    for inactive in ("flypy.ok", "flypy.rare.chars", "flypy.symbols", "flypy.emoji"):
+        assert inactive not in active_names, f"未挂载词库 {inactive} 不应参与冲突统计"
+    for mounted in ("flypy.primary", "flypy.modern", "flypy.places", "flypy.user"):
+        assert mounted in active_names, f"挂载词库 {mounted} 应参与冲突统计"
+    assert DICT_PRIORITY["flypy.modern"] < DICT_PRIORITY["flypy.secondary"], "modern 应排在 secondary 之前"
+    assert 60_000 <= db.total_entries <= 90_000, f"挂载条目总量异常: {db.total_entries}"
+    print(f"[PASS] 词库挂载面校验通过（{db.total_entries:,} 条，排除未挂载层）！\n")
 
 
 def main():

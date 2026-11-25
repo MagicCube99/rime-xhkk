@@ -30,3 +30,6 @@ docs/
 .oil-ui/
 *.upx
 tools/*.dict.yaml
+
+# Downloaded third-party corpora (jieba / THUOCL), never shipped
+tools/data/
