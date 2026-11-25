@@ -177,7 +177,7 @@
 彼	bi	b	i	bi
 罢	ba	b	a	ba
 碧	bi	b	i	bi
-剥	bc	b	ao	bao
+剥	bo	b	o	bo
 渤	bo	b	o	bo
 饼	bk	b	ing	bing
 彬	bb	b	in	bin
@@ -207,7 +207,7 @@
 芭	ba	b	a	ba
 崩	bg	b	eng	beng
 磅	bh	b	ang	bang
-簿	bo	b	o	bo
+簿	bu	b	u	bu
 鳖	bp	b	ie	bie
 哺	bu	b	u	bu
 怖	bu	b	u	bu
@@ -492,7 +492,7 @@
 凑	cz	c	ou	cou
 萃	cv	c	ui	cui
 葱	cs	c	ong	cong
-掺	cj	c	an	can
+掺	ij	ch	an	chan
 槽	cc	c	ao	cao
 粹	cv	c	ui	cui
 摧	cv	c	ui	cui
@@ -506,7 +506,7 @@
 糙	cc	c	ao	cao
 璨	cj	c	an	can
 祠	ci	c	i	ci
-卒	cu	c	u	cu
+卒	zu	z	u	zu
 岑	cf	c	en	cen
 伺	ci	c	i	ci
 雌	ci	c	i	ci
@@ -733,7 +733,7 @@
 墩	dy	d	un	dun
 翟	vd	zh	ai	zhai
 耽	dj	d	an	dan
-沓	da	d	a	da
+沓	ta	t	a	ta
 娣	di	d	i	di
 岱	dd	d	ai	dai
 凳	dg	d	eng	deng
@@ -790,7 +790,7 @@
 惮	dj	d	an	dan
 癜	dm	d	ian	dian
 妒	du	d	u	du
-嗒	ta	t	a	ta
+嗒	da	d	a	da
 町	dk	d	ing	ding
 砥	di	d	i	di
 玷	dm	d	ian	dian
@@ -1017,7 +1017,7 @@
 咡	er		er	er
 𫫇	ee		e	e
 峨	ee		e	e
-鹤	eh	e	h	eh
+鹤	he	h	e	he
 发	fa	f	a	fa
 方	fh	f	ang	fang
 法	fa	f	a	fa
@@ -1326,7 +1326,7 @@
 钩	gz	g	ou	gou
 雇	gu	g	u	gu
 圭	gv	g	ui	gui
-夹	ga	g	a	ga
+夹	jx	j	ia	jia
 葛	ge	g	e	ge
 赣	gj	g	an	gan
 轧	ga	g	a	ga
@@ -1348,7 +1348,7 @@
 糕	gc	g	ao	gao
 庚	gg	g	eng	geng
 耿	gg	g	eng	geng
-纶	gr	g	uan	guan
+纶	ly	l	un	lun
 瑰	gv	g	ui	gui
 逛	gl	g	uang	guang
 裹	go	g	uo	guo
@@ -1747,7 +1747,7 @@
 蝗	hl	h	uang	huang
 哼	hg	h	eng	heng
 蒿	hc	h	ao	hao
-吭	hh	h	ang	hang
+吭	kg	k	eng	keng
 浒	hu	h	u	hu
 嘿	hw	h	ei	hei
 骇	hd	h	ai	hai
@@ -1947,7 +1947,7 @@
 唱	ih	ch	ang	chang
 场	ih	ch	ang	chang
 重	is	ch	ong	chong
-种	is	ch	ong	chong
+种	vs	zh	ong	zhong
 程	ig	ch	eng	cheng
 厂	ih	ch	ang	chang
 车	ie	ch	e	che
@@ -2078,10 +2078,10 @@
 蝉	ij	ch	an	chan
 馇	ia	ch	a	cha
 骋	ig	ch	eng	cheng
-绰	ic	ch	ao	chao
+绰	io	ch	uo	chuo
 稠	iz	ch	ou	chou
 橱	iu	ch	u	chu
-嘲	vc	zh	ao	zhao
+嘲	ic	ch	ao	chao
 椿	iy	ch	un	chun
 锄	iu	ch	u	chu
 褚	iu	ch	u	chu
@@ -2646,7 +2646,7 @@
 鲛	jn	j	iao	jiao
 疥	jp	j	ie	jie
 戢	ji	j	i	ji
-期	ji	j	i	ji
+期	qi	q	i	qi
 阄	jq	j	iu	jiu
 噘	jt	j	ue	jue
 撅	jt	j	ue	jue
@@ -2984,7 +2984,7 @@
 狯	kk	k	uai	kuai
 纩	kl	k	uang	kuang
 蛞	ko	k	uo	kuo
-适	ko	k	uo	kuo
+适	ui	sh	i	shi
 氪	ke	k	e	ke
 骒	ke	k	e	ke
 哙	kk	k	uai	kuai
@@ -3099,7 +3099,7 @@
 亮	ll	l	iang	liang
 梁	ll	l	iang	liang
 浪	lh	l	ang	lang
-络	lc	l	ao	lao
+络	lo	l	uo	luo
 勒	le	l	e	le
 劣	lp	l	ie	lie
 龄	lk	l	ing	ling
@@ -3152,7 +3152,7 @@
 笼	ls	l	ong	long
 粒	li	l	i	li
 猎	lp	l	ie	lie
-俩	ll	l	iang	liang
+俩	lx	l	ia	lia
 廖	ln	l	iao	liao
 瘤	lq	l	iu	liu
 莉	li	l	i	li
@@ -3266,7 +3266,7 @@
 鸾	lr	l	uan	luan
 撩	ln	l	iao	liao
 冽	lp	l	ie	lie
-肋	le	l	e	le
+肋	lw	l	ei	lei
 琏	lm	l	ian	lian
 溧	li	l	i	li
 栾	lr	l	uan	luan
@@ -3578,7 +3578,7 @@
 冒	mc	m	ao	mao
 莫	mo	m	o	mo
 吗	ma	m	a	ma
-摩	ma	m	a	ma
+摩	mo	m	o	mo
 麦	md	m	ai	mai
 谋	mz	m	ou	mou
 敏	mb	m	in	min
@@ -3893,7 +3893,7 @@
 匿	ni	n	i	ni
 钠	na	n	a	na
 讷	ne	n	e	ne
-呐	ne	n	e	ne
+呐	na	n	a	na
 霓	ni	n	i	ni
 辗	nm	n	ian	nian
 碾	nm	n	ian	nian
@@ -3971,7 +3971,7 @@
 硇	nc	n	ao	nao
 猱	nc	n	ao	nao
 茑	nn	n	iao	niao
-溺	nn	n	iao	niao
+溺	ni	n	i	ni
 镎	na	n	a	na
 肭	na	n	a	na
 艿	nd	n	ai	nai
@@ -4311,7 +4311,7 @@
 欠	qm	q	ian	qian
 墙	ql	q	iang	qiang
 枪	ql	q	iang	qiang
-纤	qm	q	ian	qian
+纤	xm	x	ian	xian
 巧	qn	q	iao	qiao
 恰	qx	q	ia	qia
 牵	qm	q	ian	qian
@@ -4431,7 +4431,7 @@
 蔷	ql	q	iang	qiang
 蜻	qk	q	ing	qing
 耆	qi	q	i	qi
-鞘	uc	sh	ao	shao
+鞘	qn	q	iao	qiao
 葺	qi	q	i	qi
 朐	qu	q	u	qu
 炔	qt	q	ue	que
@@ -4787,7 +4787,7 @@
 梢	uc	sh	ao	shao
 嗣	si	s	i	si
 祀	si	s	i	si
-食	si	s	i	si
+食	ui	sh	i	shi
 缫	sc	s	ao	sao
 厮	si	s	i	si
 驷	si	s	i	si
@@ -5073,7 +5073,7 @@
 蹋	ta	t	a	ta
 跆	td	t	ai	tai
 邰	td	t	ai	tai
-忒	te	t	e	te
+忒	tv	t	ui	tui
 疃	tr	t	uan	tuan
 傥	th	t	ang	tang
 仝	ts	t	ong	tong
@@ -5216,7 +5216,7 @@
 社	ue	sh	e	she
 说	uo	sh	uo	shuo
 水	uv	sh	ui	shui
-省	xk	x	ing	xing
+省	ug	sh	eng	sheng
 商	uh	sh	ang	shang
 使	ui	sh	i	shi
 守	uz	sh	ou	shou
@@ -5237,7 +5237,7 @@
 首	uz	sh	ou	shou
 身	uf	sh	en	shen
 神	uf	sh	en	shen
-识	vi	zh	i	zhi
+识	ui	sh	i	shi
 师	ui	sh	i	shi
 售	uz	sh	ou	shou
 史	ui	sh	i	shi
@@ -5277,7 +5277,7 @@
 厦	ua	sh	a	sha
 蔬	uu	sh	u	shu
 饰	ui	sh	i	shi
-殖	ui	sh	i	shi
+殖	vi	zh	i	zhi
 舍	ue	sh	e	she
 杀	ua	sh	a	sha
 烧	uc	sh	ao	shao
@@ -5572,7 +5572,7 @@
 纸	vi	zh	i	zhi
 振	vf	zh	en	zhen
 障	vh	zh	ang	zhang
-择	vd	zh	ai	zhai
+择	ze	z	e	ze
 驻	vu	zh	u	zhu
 朱	vu	zh	u	zhu
 赵	vc	zh	ao	zhao
@@ -6175,7 +6175,7 @@
 喜	xi	x	i	xi
 鲜	xm	x	ian	xian
 细	xi	x	i	xi
-血	xp	x	ie	xie
+血	xt	x	ue	xue
 迅	xy	x	un	xun
 夏	xx	x	ia	xia
 谢	xp	x	ie	xie
@@ -7341,7 +7341,7 @@
 觇	ij	ch	an	chan
 儳	ij	ch	an	chan
 堾	ir	ch	r	chr
-涌	is	ch	ong	chong
+涌	ys	y	ong	yong
 㳘	is	ch	ong	chong
 墐	jb	j	in	jin
 馑	jb	j	in	jin

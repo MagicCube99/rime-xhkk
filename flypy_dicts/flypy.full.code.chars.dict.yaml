@@ -6,7 +6,7 @@
 
 ---
 name: flypy.full.code.chars
-version: "v1.26.9c"
+version: "v1.26.9c+r1"
 sort: original
 ...
 𩽾	anan
@@ -454,6 +454,7 @@ sort: original
 抄	icfu
 炒	ichu
 绰	icsu
+绰	iosu
 超	ictk
 撤	iefw
 坼	ieti
@@ -756,6 +757,7 @@ sort: original
 梁	lldm
 粱	lldm
 俩	llrl
+俩	lxrl
 亮	llwj
 谅	llyx
 帘	lmbj
@@ -895,6 +897,7 @@ sort: original
 撵	nmfi
 黏	nmhk
 溺	nndd
+溺	nidd
 农	nsdn
 哪	nwke
 妞	nqni
@@ -1132,6 +1135,7 @@ sort: original
 什	ufru
 勺	ucbd
 鞘	ucgo
+鞘	qngo
 伸	ufru
 绅	ufsu
 慎	ufxb
@@ -1242,6 +1246,7 @@ sort: original
 知	viuk
 智	viuo
 识	viyb
+识	uiyb
 沾	vjdk
 盏	vjjm
 占	vjlk
