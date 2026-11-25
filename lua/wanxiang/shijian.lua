@@ -2592,17 +2592,27 @@ local function translator(input, seg, env)
     end
 
     -- 以下为需要通过 shijian_keys 触发的功能
-    local shijian_keys_config = config:get_list("key_binder/shijian_keys")
+    -- 性能优化：Session 级惰性缓存 shijian_keys 列表，彻底消除每次 o 开头输入时的 C++ FFI 遍历读取
+    local shijian_keys = env.shijian_keys
+    if not shijian_keys then
+        shijian_keys = {}
+        local cfg = config:get_list("key_binder/shijian_keys")
+        if cfg then
+            for i = 0, cfg.size - 1 do
+                shijian_keys[#shijian_keys + 1] = cfg:get_value_at(i).value
+            end
+        else
+            shijian_keys = { "/", "o" }
+        end
+        env.shijian_keys = shijian_keys
+    end
+
     local is_sijian_input = false
     local command = ""
 
-    if not shijian_keys_config then
-        return
-    end
-
-    for i = 0, shijian_keys_config.size - 1 do
-        local key = shijian_keys_config:get_value_at(i).value
-        local key_length = string.len(key)
+    for i = 1, #shijian_keys do
+        local key = shijian_keys[i]
+        local key_length = #key
         if string.sub(input, 1, key_length) == key then
             is_sijian_input = true
             command = string.sub(input, key_length + 1)

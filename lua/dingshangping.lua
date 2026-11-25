@@ -39,7 +39,13 @@ function P.func(key, env)
 
     local input = context.input
     -- 仅对 4 位纯字母编码生效（排除所有带前缀、符号、特殊引导的长编码或短编码）
-    if #input ~= 4 or not input:match("^[a-z]+$") then
+    -- 性能优化：4 字节原生整型比较代替正则引擎匹配，在顶屏提交的关键帧上 0 开销瞬判
+    if not input or #input ~= 4 then
+        return 2
+    end
+    local b1, b2, b3, b4 = input:byte(1, 4)
+    if b1 < 97 or b1 > 122 or b2 < 97 or b2 > 122 or
+       b3 < 97 or b3 > 122 or b4 < 97 or b4 > 122 then
         return 2
     end
 

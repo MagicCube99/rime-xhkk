@@ -71,6 +71,13 @@ function M.init(env)
     -- 惰性加载：初始化时不读文件，保障输入法会话毫秒级即启
 end
 
+function M.has_code(code)
+    if not is_loaded then
+        load_places()
+    end
+    return places ~= nil and places[code] ~= nil
+end
+
 function M.func(input, seg, env)
     if not is_loaded then
         load_places()

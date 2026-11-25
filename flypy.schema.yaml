@@ -4,7 +4,7 @@
 schema:
   schema_id: flypy
   name: 小鹤音形
-  version: "10.26.12"
+  version: "10.26.13"
   author:
     - 方案设计：何海峰 flypy.cc
   description:
@@ -185,13 +185,6 @@ radical_lookup:                       # 部件拆字滤镜
   overwrite_comment: false
   comment_format: xform/^/~/
 
-reverse_lookup:
-  dictionary: flypydz
-  comment_format:
-   # - xform/^/〔/
-   # - xform/$/〕/
-    - xform/ / /
-
 key_binder:
   import_preset: default #方案切换相关
   shijian_keys: ["/", "o"]
@@ -225,14 +218,7 @@ recognizer:
     flypy_radical: "^ok[a-z']*$"
     punct: "^/([0-9]0?|[A-Za-z]+)$"      # 新增：符号输入 /fh
     number: "^R[0-9]+[.]?[0-9]*$"        # 金额大写输入 R + 数字（万象默认）
-    yr1: "^N0[1-9]?0?[1-9]?"             # 年份输入 N + 日期（万象默认）
-    yr2: "^N1[02]?0?[1-9]?"
-    yr3: "^N0[1-9]?[1-2]?[1-9]?"
-    yr4: "^N1[02]?[1-2]?[1-9]?"
-    yr5: "^N0[1-9]?3?[01]?"
-    yr6: "^N1[02]?3?[01]?"
-    nyr1: "^N19?[0-9]?[0-9]?[0-1]?[0-9]?[0-9]?[0-9]?"
-    nyr2: "^N20?[0-9]?[0-9]?[0-1]?[0-9]?[0-9]?[0-9]?"
+    shijian: "^N[0-9-]*$"                 # 农历与日期反查 N + 数字/日期区间
     calculator: "^V.*$"                   # 新增：万象超级计算器 V 引导（万象默认）
     url: "^(www[.]|https?:|ftp[.:]|mailto:|file:).*$|^[a-z]+[.].+$"
 
