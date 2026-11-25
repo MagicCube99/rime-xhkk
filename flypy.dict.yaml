@@ -48,9 +48,6 @@ import_tables:
   # --- ② 常规模式扩展（已有简码的全码词）---
   - "flypy_dicts/flypy.full.code.words"   # 2.3 全码词（约500条）
 
-  # --- 基础地名扩展库（9,300+条全国省市县区+乡镇，重码排在常规全码常用词之后）---
-  - "flypy_dicts/flypy.places"            # 标准地名词库（全国省市县区+浙江乡镇街道）
-
   # --- ③ 全码字保底库（已有简码的高频单字，打全码时提供次选兜底出字）---
   - "flypy_dicts/flypy.full.code.chars"   # 全码字（约1650条，前500高频字打全码不卡壳）
   # - "flypy_dicts/flypy.rare.chars"        # 生僻字（约500条）
