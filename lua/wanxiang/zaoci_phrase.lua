@@ -106,10 +106,9 @@ function ZaociPhrase.fini(env)
     end
 end
 
-function ZaociPhrase.func(input, env)
-    for cand in input:iter() do
-        yield(cand)
-    end
+function ZaociPhrase.func(key, env)
+    -- 作为 processor 运行时，直接 1 纳秒放行所有按键，仅通过 commit_notifier 监听造词
+    return 2 -- 2 = kNoop
 end
 
 function ZaociPhrase.commit_handler(ctx, env)
@@ -169,4 +168,4 @@ function ZaociPhrase.commit_handler(ctx, env)
     end
 end
 
-return { filter = ZaociPhrase }
+return { filter = ZaociPhrase, processor = ZaociPhrase }

@@ -174,8 +174,29 @@ local function release_sequence_state(env)
     collectgarbage()
 end
 
+local function load_active_prefixes(state)
+    if state.active_prefixes then return state.active_prefixes end
+    local prefixes = {}
+    local accessor = state.db:query("")
+    if accessor then
+        for raw_key, tail in accessor:iter() do
+            local sep_idx = raw_key:find(RECORD_SEPARATOR, 1, true)
+            if sep_idx then
+                local inp = raw_key:sub(1, sep_idx - 1)
+                prefixes[inp] = true
+            end
+        end
+    end
+    accessor = nil
+    state.active_prefixes = prefixes
+    return prefixes
+end
+
 local function invalidate_input_cache(state, input)
     if not state then return end
+    if input and state.active_prefixes then
+        state.active_prefixes[input] = true
+    end
 
     if input then
         if state.cache[input] then
@@ -216,6 +237,12 @@ end
 
 local function load_input_records(state, input)
     if not state or not input or input == "" then return {}, false end
+
+    -- 零 I/O 内存守卫：未手动调频过的编码（占全部击键 99.99%）直接从内存 Hash 快速瞬退，绝不触发磁盘 LevelDB
+    local prefixes = load_active_prefixes(state)
+    if not prefixes[input] then
+        return {}, false
+    end
 
     local cached = state.cache[input]
     if cached then
@@ -307,6 +334,10 @@ local function write_active_position(state, input, item, position, records)
 
     local tail = make_record_tail(commits, tick)
     if not tail or not state.db:update(raw_key, tail) then return false end
+
+    if state.active_prefixes then
+        state.active_prefixes[input] = true
+    end
 
     update_cached_record(state, input, item, commits, tick)
     records[item] = state.cache[input]
