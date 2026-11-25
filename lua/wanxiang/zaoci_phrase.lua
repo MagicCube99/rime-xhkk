@@ -1,17 +1,11 @@
 -- @amzxyz https://github.com/amzxyz/rime-wanxiang
--- 手动造词编码存储：确保 zaoci 造词后能用压缩编码查询
+-- 手动造词编码存储：确保 zaoci 造词后能用压缩编码查询（单引号 4 码定长）
 local ZaociPhrase = {}
 
-local function parse_input_codes(raw_input, is_zaoci, is_zaoci_c6)
+local function parse_input_codes(raw_input)
     local body = raw_input or ""
-    if is_zaoci_c6 then
-        if body:sub(1, 1) == "~" then
-            body = body:sub(2)
-        end
-    elseif is_zaoci then
-        if body:sub(1, 1) == "'" then
-            body = body:sub(2)
-        end
+    if body:sub(1, 1) == "'" then
+        body = body:sub(2)
     end
 
     local char_groups = {}
@@ -63,28 +57,10 @@ local function apply_formula_4char(char_codes)
     end
 end
 
-local function apply_formula_6char(char_codes)
-    local n = #char_codes
-    if n == 0 then return "" end
-    if n == 1 then
-        return table.concat(char_codes[1], "")
-    elseif n == 2 then
-        local c1, c2 = char_codes[1], char_codes[2]
-        return (c1[1] or "") .. (c1[2] or "") .. (c2[1] or "") .. (c2[2] or "") .. (c1[3] or "") .. (c2[3] or "")
-    elseif n == 3 then
-        local c1, c2, c3 = char_codes[1], char_codes[2], char_codes[3]
-        return (c1[1] or "") .. (c2[1] or "") .. (c3[1] or "") .. (c3[2] or "") .. (c1[3] or "") .. (c3[3] or "")
-    else
-        local c1, c2, c3, cn = char_codes[1], char_codes[2], char_codes[3], char_codes[n]
-        return (c1[1] or "") .. (c2[1] or "") .. (c3[1] or "") .. (cn[1] or "") .. (c1[3] or "") .. (cn[3] or "")
-    end
-end
-
 function ZaociPhrase.init(env)
     env.memory_4 = Memory(env.engine, env.engine.schema, "cizu")
-    env.memory_6 = Memory(env.engine, env.engine.schema, "cizu_c6")
 
-    if env.memory_4 or env.memory_6 then
+    if env.memory_4 then
         env._commit_conn = env.engine.context.commit_notifier:connect(function(ctx)
             ZaociPhrase.commit_handler(ctx, env)
         end)
@@ -99,10 +75,6 @@ function ZaociPhrase.fini(env)
     if env.memory_4 then
         env.memory_4:disconnect()
         env.memory_4 = nil
-    end
-    if env.memory_6 then
-        env.memory_6:disconnect()
-        env.memory_6 = nil
     end
 end
 
@@ -120,9 +92,7 @@ function ZaociPhrase.commit_handler(ctx, env)
     if not raw_input or raw_input == "" then return end
 
     local is_zaoci = raw_input:find("'") ~= nil
-    local is_zaoci_c6 = raw_input:find("^~") ~= nil
-
-    if not is_zaoci and not is_zaoci_c6 then return end
+    if not is_zaoci then return end
 
     local text_len = utf8.len(commit_text)
     if text_len <= 1 then return end
@@ -134,7 +104,7 @@ function ZaociPhrase.commit_handler(ctx, env)
         end
     end
 
-    local char_codes = parse_input_codes(raw_input, is_zaoci, is_zaoci_c6)
+    local char_codes = parse_input_codes(raw_input)
 
     if #char_codes == 1 and text_len > 1 then
         char_codes = split_flat_codes(char_codes[1], text_len)
@@ -142,13 +112,7 @@ function ZaociPhrase.commit_handler(ctx, env)
 
     if #char_codes == 0 then return end
 
-    local compressed = ""
-    if is_zaoci_c6 then
-        compressed = apply_formula_6char(char_codes)
-    else
-        compressed = apply_formula_4char(char_codes)
-    end
-
+    local compressed = apply_formula_4char(char_codes)
     if compressed == "" then return end
 
     local entry = DictEntry()
@@ -156,15 +120,8 @@ function ZaociPhrase.commit_handler(ctx, env)
     entry.weight = 1
     entry.custom_code = compressed .. " "
 
-    local memory = nil
-    if is_zaoci_c6 then
-        memory = env.memory_6
-    else
-        memory = env.memory_4
-    end
-
-    if memory then
-        memory:update_userdict(entry, 1, "")
+    if env.memory_4 then
+        env.memory_4:update_userdict(entry, 1, "")
     end
 end
 

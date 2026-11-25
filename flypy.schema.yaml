@@ -4,7 +4,7 @@
 schema:
   schema_id: flypy
   name: 小鹤音形
-  version: "10.26.8"
+  version: "10.26.9"
   author:
     - 方案设计：何海峰 flypy.cc
   description:
@@ -12,7 +12,6 @@ schema:
   dependencies:
     - flypydz
     - flypyzc
-    - flypyzc6
     # - emoji
     - easy_en
     - flypy_radical         # 新增：部件拆字反查
@@ -56,7 +55,6 @@ engine:
     - affix_segmentor@easy_en
     - affix_segmentor@flypy_radical
     - affix_segmentor@zaoci
-    - affix_segmentor@zaoci_c6
     - abc_segmentor
     - punct_segmentor
     - fallback_segmentor
@@ -65,8 +63,6 @@ engine:
     - table_translator
     - table_translator@cizu
     - table_translator@zaoci
-    - table_translator@cizu_c6
-    - table_translator@zaoci_c6
     - lua_translator@*wanxiang.shijian  #农历、日期、节气、节日、时间、周、问候模板等等，触发清单看下文
     - lua_translator@*wanxiang.number_conversion  #数字、金额大写，通过输入大写R1234获得候选输出
     - lua_translator@*wanxiang.super_calculator  #超级计算器，Lua内查看高级用法
@@ -126,27 +122,6 @@ zaoci:
   prefix: "'"
   tips: "〔手动造词〕"
   tag: zaoci
-
-# 6码造词查询
-cizu_c6:
-  dictionary: flypyzc6
-  enable_charset_filter: false
-  enable_sentence: false
-  enable_encoder: true
-  enable_completion: false
-  encode_commit_history: false
-  enable_user_dict: true
-  initial_quality: -1.5
-
-# 6码手动造词（~ 前缀）
-zaoci_c6:
-  __include: /cizu_c6
-  enable_sentence: true
-  enable_user_dict: false
-  max_phrase_length: 14
-  prefix: "~"
-  tips: "〔6码造词〕"
-  tag: zaoci_c6
 
 # 次翻译器(英文)
 easy_en:
@@ -243,7 +218,6 @@ recognizer:
     #emoji: "^oe[a-z]*'?$"
     easy_en: "^oy[a-z]*'?$"
     flypy_radical: "^ok[a-z']*$"
-    zaoci_c6: "^~[]a-z']*$"
     punct: "^/([0-9]0?|[A-Za-z]+)$"      # 新增：符号输入 /fh
     number: "^R[0-9]+[.]?[0-9]*$"        # 金额大写输入 R + 数字（万象默认）
     yr1: "^N0[1-9]?0?[1-9]?"             # 年份输入 N + 日期（万象默认）
