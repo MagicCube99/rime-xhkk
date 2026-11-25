@@ -18,6 +18,12 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any
 
+try:  # 可选依赖：用于多音字词组读音仲裁
+    from pypinyin import lazy_pinyin as _lazy_pinyin, Style as _PinyinStyle
+except ImportError:  # 缺失时退化为「无读音仲裁」，编码行为保持不变
+    _lazy_pinyin = None
+    _PinyinStyle = None
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DICTS_DIR = REPO_ROOT / "flypy_dicts"
 ASSETS_DIR = REPO_ROOT / "tools" / "xhkk-builder" / "pkg" / "encoder" / "assets"
@@ -130,6 +136,32 @@ class FlypyEncoder:
         """获取单个汉字的 2 码双拼"""
         return self.char_map.get(char)
 
+    def _char_codes(self, word: str) -> List[str]:
+        """逐字求 2 码双拼：完整词组特例 > 二字子词特例 > 单字底表。"""
+        n = len(word)
+        if word in self.phrase_exceptions:
+            return list(self.phrase_exceptions[word])
+
+        codes: List[Optional[str]] = [None] * n
+        # 1. 二字子词特例覆盖（如 "朝夕"相伴 -> 朝夕优先采用 vc xi 消除多音歧义）
+        for i in range(n - 1):
+            sub2 = word[i:i+2]
+            if sub2 in self.phrase_exceptions:
+                sub_codes = self.phrase_exceptions[sub2]
+                if codes[i] is None:
+                    codes[i] = sub_codes[0]
+                if codes[i+1] is None:
+                    codes[i+1] = sub_codes[1]
+
+        # 2. 剩余单字查字表底册
+        for i, ch in enumerate(word):
+            if codes[i] is None:
+                c = self.get_char_flypy(ch)
+                if not c:
+                    raise KeyError(f"未收录汉字 '{ch}'，无法确定双拼")
+                codes[i] = c
+        return codes  # type: ignore[return-value]
+
     def encode(self, word: str, target_dict: str = "") -> Tuple[str, str]:
         """
         计算小鹤音形标准词汇编码：
@@ -138,33 +170,14 @@ class FlypyEncoder:
           - 若为 flypy.names: 主码 AaBaCa (3码), 次码 AaBaCaCb (4码)
           - 其它情况: 主码 AaBaCaCb (4码), 次码空
         - 4字及以上: AaBaCaDa / AaBaCaZa -> c1[0] + c2[0] + c3[0] + cN[0] (4码)
+
+        注意：单字底表对多音字只存一个读音。落库前务必用 audit_polyphone()
+        复核词内读音是否与词组语境一致（如 祭奠 不能按 祭=zhài 编码）。
         """
         n = len(word)
         if n < 2:
             raise ValueError(f"词长必须 >= 2: '{word}'")
-
-        # 1. 优先查词组完整特例
-        if word in self.phrase_exceptions:
-            codes = list(self.phrase_exceptions[word])
-        else:
-            codes = [None] * n
-            # 2. 检查 2 字子词特例覆盖（如 "朝夕"相伴 -> 朝夕优先采用 vc xi 消除多音歧义）
-            for i in range(n - 1):
-                sub2 = word[i:i+2]
-                if sub2 in self.phrase_exceptions:
-                    sub_codes = self.phrase_exceptions[sub2]
-                    if codes[i] is None:
-                        codes[i] = sub_codes[0]
-                    if codes[i+1] is None:
-                        codes[i+1] = sub_codes[1]
-
-            # 3. 剩余单字查字表底册
-            for i, ch in enumerate(word):
-                if codes[i] is None:
-                    c = self.get_char_flypy(ch)
-                    if not c:
-                        raise KeyError(f"未收录汉字 '{ch}'，无法确定双拼")
-                    codes[i] = c
+        codes = self._char_codes(word)
 
         if n == 2:
             return codes[0][:2] + codes[1][:2], ""
@@ -176,6 +189,57 @@ class FlypyEncoder:
         else:
             # 4字及以上取 1, 2, 3, 末字的首声母
             return codes[0][0] + codes[1][0] + codes[2][0] + codes[-1][0], ""
+
+    # --- 多音字仲裁（pypinyin 词组读音）------------------------------------
+    def reading_to_flypy(self, reading: str) -> Optional[str]:
+        """把不带声调的拼音读音转成 2 码小鹤双拼；无法映射时返回 None。"""
+        r = reading.strip().lower().replace("ü", "v")
+        if not r:
+            return None
+        for ini in ("zh", "ch", "sh"):
+            if r.startswith(ini) and len(r) > len(ini):
+                fin = self.FINAL_MAP.get(r[len(ini):])
+                return self.INITIAL_MAP[ini] + fin if fin else None
+        if r[0] in "bpmfdtnlgkhjqxrzcsyw" and len(r) > 1:
+            fin = self.FINAL_MAP.get(r[1:])
+            return r[0] + fin if fin else None
+        return self.ZERO_INITIAL_MAP.get(r)
+
+    def pypinyin_codes(self, word: str) -> Optional[List[str]]:
+        """按词组的实际读音求 2 码（而非单字默认音）；pypinyin 不可用时返回 None。"""
+        if _lazy_pinyin is None:
+            return None
+        try:
+            readings = _lazy_pinyin(word, style=_PinyinStyle.NORMAL)
+        except Exception:
+            return None
+        if len(readings) != len(word):
+            return None
+        codes: List[str] = []
+        for r in readings:
+            c = self.reading_to_flypy(r)
+            if c is None:
+                return None
+            codes.append(c)
+        return codes
+
+    def audit_polyphone(self, word: str) -> List[Tuple[str, str, str]]:
+        """对比底表读音与词组读音，返回冲突项 [(字, 表码, 词码)]。
+
+        空列表 = 无冲突，或无法仲裁（pypinyin 缺失 / 该词已由 phrase_exceptions 人工钉死）。
+        底表对多音字只存一个读音，冲突说明 encode() 算出的码可能建立在错读上，
+        必须人工确认后才能落库。
+        """
+        if word in self.phrase_exceptions:
+            return []
+        try:
+            table = self._char_codes(word)
+        except (KeyError, ValueError):
+            return []
+        pp = self.pypinyin_codes(word)
+        if pp is None:
+            return []
+        return [(ch, t, p) for ch, t, p in zip(word, table, pp) if t != p]
 
 
 class Entry:
@@ -305,10 +369,22 @@ class CorpusDatabase:
         return result
 
     def assess_admission(self, word: str, target_dict: str = "") -> Dict[str, Any]:
-        """加词准入审计：计算编码并按「自动上屏红线」给出放行/拦截/复核结论。"""
+        """加词准入审计：计算编码并按「自动上屏红线」给出放行/拦截/复核结论。
+
+        若词内存在多音字读音冲突，则算出的编码本身不可信：即便该码为空，
+        也不得直接放行，降级为 REVIEW 交人工确认读音。
+        """
         code, secondary_code = self.encoder.encode(word, target_dict)
         candidates = self.get_candidates(code)
         verdict, reason = decide_admission(word, candidates)
+        conflicts = self.encoder.audit_polyphone(word)
+        if conflicts:
+            detail = "，".join(f"{ch} 表{t}/词{p}" for ch, t, p in conflicts)
+            if verdict == ADMISSION_ALLOW:
+                verdict = ADMISSION_REVIEW
+                reason = f"多音字读音待确认（{detail}），编码 {code} 不可信"
+            else:
+                reason += f"；另有多音字读音冲突（{detail}）"
         return {
             "word": word,
             "code": code,
@@ -316,6 +392,7 @@ class CorpusDatabase:
             "candidates": candidates,
             "verdict": verdict,
             "reason": reason,
+            "polyphone_conflicts": conflicts,
         }
 
 
@@ -408,7 +485,21 @@ def run_unit_tests():
     assert res["verdict"] == ADMISSION_ALLOW, f"微信为既有词条应放行: {res}"
     print("[PASS] 加词准入闸门（空码放行 / 唯一码拦截 / 菜单码复核）全部验证通过！\n")
 
-    # 6. 词库挂载面测试（只统计真实生效的词库层，排除未挂载的 ok/生僻字/符号/表情）
+    # 6. 多音字读音仲裁（底表只存单音，落库前必须按词组读音复核）
+    assert encoder.encode("祭奠")[0] == "jidm", "祭奠 应按 ji+dian 编码为 jidm"
+    assert encoder.encode("卵石")[0] == "lrui", "卵石 应按 luan+shi 编码为 lrui"
+    assert encoder.encode("桨叶")[0] == "jlye", "桨叶 应按 jiang+ye 编码为 jlye"
+    assert encoder.audit_polyphone("作证") == [], "作证 不应报多音字冲突"
+    assert encoder.pypinyin_codes("祭奠") == ["ji", "dm"], "pypinyin 应识别 祭奠 = ji dian"
+    assert encoder.pypinyin_codes("石") == ["ui"], "石 的常用读音应为 shi(ui)"
+    # 构造一张错读底表：冲突必须被审计捕获，不能静默算出错码
+    bad = FlypyEncoder()
+    bad.char_map["祭"] = "vd"
+    assert bad.audit_polyphone("祭奠"), "底表把 祭 读成 zhai 时必须报冲突"
+    assert bad.encode("祭奠")[0] == "vddm", "错读底表下编码为 vddm（正是审计要拦下的情况）"
+    print("[PASS] 多音字读音仲裁（祭奠/卵石/桨叶 按词组读音编码）！\n")
+
+    # 7. 词库挂载面测试（只统计真实生效的词库层，排除未挂载的 ok/生僻字/符号/表情）
     active_names = {e.dict_name for entries in db.code_to_entries.values() for e in entries}
     for inactive in ("flypy.ok", "flypy.rare.chars", "flypy.symbols", "flypy.emoji"):
         assert inactive not in active_names, f"未挂载词库 {inactive} 不应参与冲突统计"
@@ -474,6 +565,9 @@ def main():
             cands = res["candidates"]
             print(f"{res['verdict']:<6} {w:<8} 编码 {res['code']:<6} 现有候选 {len(cands)}")
             print(f"  └─ {res['reason']}")
+            if res.get("polyphone_conflicts"):
+                detail = "，".join(f"{ch} 表{t}/词{p}" for ch, t, p in res["polyphone_conflicts"])
+                print(f"  └─ ⚠ 多音字: {detail}")
             if cands:
                 preview = ", ".join(f"{c.word}({c.dict_name})" for c in cands[:5])
                 print(f"  └─ 现有: {preview}")

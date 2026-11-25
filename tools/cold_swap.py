@@ -101,10 +101,24 @@ def should_swap(old_rime: int, old_jieba_freq: Optional[int],
     return True
 
 
+def polyphone_block(encoder, word: str) -> Optional[str]:
+    """返回多音字读音冲突说明；无冲突返回 None。"""
+    conflicts = encoder.audit_polyphone(word)
+    if not conflicts:
+        return None
+    detail = "，".join(f"{ch} 表{t}/词{p}" for ch, t, p in conflicts)
+    return f"「{word}」多音字读音冲突（{detail}）"
+
+
 def build_challenger_pool(db: CorpusDatabase, encoder: FlypyEncoder,
                           rime_freq: Dict[str, int],
-                          lexicon: Dict[str, Tuple[int, str]]) -> Dict[str, Dict]:
-    """从现代语料构建「同码更热实词」候选池：每个编码只保留权重最高的合格词。"""
+                          lexicon: Dict[str, Tuple[int, str]],
+                          ambiguous: Optional[List[Dict]] = None) -> Dict[str, Dict]:
+    """从现代语料构建「同码更热实词」候选池：每个编码只保留权重最高的合格词。
+
+    词内含多音字读音冲突的候选（底表读音 ≠ 词组读音）编码不可信，一律不进池，
+    单独记入 ambiguous 供人工核对。
+    """
     pool: Dict[str, Dict] = {}
     for word, new_rime in rime_freq.items():
         if new_rime < MIN_NEW_RIME or word in db.word_to_entries:
@@ -121,6 +135,11 @@ def build_challenger_pool(db: CorpusDatabase, encoder: FlypyEncoder,
             continue
         if len(code) != 4:
             continue
+        conflict = polyphone_block(encoder, word)
+        if conflict:
+            if ambiguous is not None:
+                ambiguous.append({"word": word, "code": code, "detail": conflict})
+            continue
         current = pool.get(code)
         if current is None or new_rime > current["new_rime"]:
             pool[code] = {"new": word, "new_rime": new_rime,
@@ -130,9 +149,10 @@ def build_challenger_pool(db: CorpusDatabase, encoder: FlypyEncoder,
 
 def find_swaps(db: CorpusDatabase, encoder: FlypyEncoder,
                rime_freq: Dict[str, int],
-               lexicon: Dict[str, Tuple[int, str]]) -> List[Dict]:
+               lexicon: Dict[str, Tuple[int, str]],
+               ambiguous: Optional[List[Dict]] = None) -> List[Dict]:
     """扫描主库唯一二字码，产出「旧词双冷 → 新词双热」的置换候选。"""
-    pool = build_challenger_pool(db, encoder, rime_freq, lexicon)
+    pool = build_challenger_pool(db, encoder, rime_freq, lexicon, ambiguous)
     rows: List[Dict] = []
     for code, entries in db.code_to_entries.items():
         if len(entries) != 1:
@@ -170,7 +190,7 @@ def write_tsv(rows: List[Dict], path: Path):
                     f"{r['new_rime']}\t{r['new_jieba']}\t{r['pos']}\n")
 
 
-def write_report(rows: List[Dict], path: Path):
+def write_report(rows: List[Dict], path: Path, ambiguous: Optional[List[Dict]] = None):
     lines = [
         "# 冷码置换候选报告",
         "",
@@ -178,6 +198,10 @@ def write_report(rows: List[Dict], path: Path):
         "> 写入前必须人工复核：语料对现代新词存在滞后（如「出圈 / 单聊 / 公募」），现代词被误判为冷词时必须否决。",
         "",
         f"- 候选总数：{len(rows)}",
+    ]
+    if ambiguous:
+        lines.append(f"- 因多音字读音冲突被剔除的候选：{len(ambiguous)}")
+    lines += [
         "",
         "| 编码 | 旧词（rime / jieba） | 新词（rime / jieba） | 词性 |",
         "| :--- | :--- | :--- | :--- |",
@@ -186,6 +210,21 @@ def write_report(rows: List[Dict], path: Path):
         oj = r["old_jieba"] if r["old_jieba"] is not None else "—"
         lines.append(f"| `{r['code']}` | {r['old']}（{r['old_rime']} / {oj}） | "
                      f"{r['new']}（{r['new_rime']} / {r['new_jieba']}） | {r['pos']} |")
+
+    if ambiguous:
+        lines += [
+            "",
+            "## 因多音字读音冲突被剔除的候选",
+            "",
+            "> 这些词的编码依赖底表里的单一读音，而词组实际读音不同（如 祭奠 的 祭 读 jì 而非 zhài）。",
+            "> 若确需收录，应先修正 `primary_chars.tsv` 底表，或人工确认编码后在授权下使用 `--allow-polyphone`。",
+            "",
+            "| 编码 | 词 | 冲突 |",
+            "| :--- | :--- | :--- |",
+        ]
+        for a in ambiguous:
+            lines.append(f"| `{a['code']}` | {a['word']} | {a['detail']} |")
+
     lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -227,7 +266,36 @@ def run_unit_tests():
     assert not should_swap(800, None, 2399, 900), "未达 3 倍增益应拒绝"
     print("[PASS] 置换打分（绝对阈值 + 倍数增益）")
 
-    # 3. 主库文本重写
+    # 3. 多音字冲突拦截（编码依赖底表单音时必须拒绝落库）
+    class _ToyEnc:
+        def __init__(self, conflicts):
+            self._conflicts = conflicts
+
+        def encode(self, word):
+            return "vddm", ""
+
+        def audit_polyphone(self, word):
+            return [] if word == "作证" else self._conflicts
+
+    class _ToyDB:
+        word_to_entries: Dict[str, List] = {}
+
+    assert polyphone_block(_ToyEnc([]), "作证") is None
+    msg = polyphone_block(_ToyEnc([("祭", "vd", "ji")]), "祭奠")
+    assert msg and "祭" in msg and "vd" in msg and "ji" in msg, "错读必须生成可读冲突说明"
+
+    ambiguous: List[Dict] = []
+    pool = build_challenger_pool(
+        _ToyDB(), _ToyEnc([("祭", "vd", "ji")]),
+        {"祭奠": 5000, "作证": 5000},
+        {"祭奠": (300, "n"), "作证": (300, "n")},
+        ambiguous,
+    )
+    assert any(a["word"] == "祭奠" for a in ambiguous), "多音字候选必须被记入歧义清单"
+    assert pool.get("vddm", {}).get("new") == "作证", "多音字候选不得占用候选池"
+    print("[PASS] 多音字读音冲突拦截（候选池剔除 + 落库拦截）")
+
+    # 4. 主库文本重写
     text = "---\nname: test\n...\n系上\tjiuh\n宝安\tbcan\n"
     new_text, applied = rewrite_primary_text(text, [("jiuh", "系上", "机上")])
     assert "机上\tjiuh" in new_text and "系上\tjiuh" not in new_text, "旧行应被原位替换"
@@ -257,7 +325,7 @@ def read_apply_list(path: Path) -> List[Tuple[str, str, str]]:
     return swaps
 
 
-def apply_approved(path: Path):
+def apply_approved(path: Path, allow_polyphone: bool = False):
     """校验并执行已批准的置换清单，写入主库前自动备份。"""
     encoder = FlypyEncoder()
     db = CorpusDatabase(encoder)
@@ -274,6 +342,10 @@ def apply_approved(path: Path):
         new_code, _ = encoder.encode(new_word)
         if new_code != code:
             raise ValueError(f"新词「{new_word}」编码为 {new_code}，与清单 {code} 不符")
+        conflict = polyphone_block(encoder, new_word)
+        if conflict and not allow_polyphone:
+            raise ValueError(f"{conflict}；底表读音与词组读音不符，编码不可信。"
+                             "确认读音无误后加 --allow-polyphone 重跑")
         if new_word in db.word_to_entries:
             raise ValueError(f"新词「{new_word}」已存在于其他词库，不能重复收录")
 
@@ -296,6 +368,8 @@ def main():
     parser.add_argument("--tsv", type=str, help="写出机器可读候选清单路径")
     parser.add_argument("--limit", type=int, default=0, help="只输出前 N 条")
     parser.add_argument("--apply", type=str, help="执行已批准的 TSV 置换清单")
+    parser.add_argument("--allow-polyphone", action="store_true",
+                        help="允许写入含多音字读音冲突的词（仅在人工确认读音无误后使用）")
     args = parser.parse_args()
 
     if args.test:
@@ -303,7 +377,7 @@ def main():
         return
 
     if args.apply:
-        apply_approved(Path(args.apply))
+        apply_approved(Path(args.apply), allow_polyphone=args.allow_polyphone)
         return
 
     if args.report or args.tsv:
@@ -311,15 +385,18 @@ def main():
         db = CorpusDatabase(encoder)
         rime_freq = load_frequencies()
         lexicon = load_lexicon()
-        rows = find_swaps(db, encoder, rime_freq, lexicon)
+        ambiguous: List[Dict] = []
+        rows = find_swaps(db, encoder, rime_freq, lexicon, ambiguous)
         if args.limit:
             rows = rows[:args.limit]
         if args.tsv:
             write_tsv(rows, Path(args.tsv))
             print(f"已写入候选清单: {args.tsv}（{len(rows)} 条）")
         if args.report:
-            write_report(rows, Path(args.report))
+            write_report(rows, Path(args.report), ambiguous)
             print(f"已写入候选报告: {args.report}（{len(rows)} 条）")
+        if ambiguous:
+            print(f"因多音字读音冲突剔除 {len(ambiguous)} 条候选（详见报告）")
         return
 
     parser.print_help()
