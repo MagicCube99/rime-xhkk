@@ -20,6 +20,10 @@ Thumbs.db
 *.swp
 *.bak
 
+# Python cache
+__pycache__/
+*.pyc
+
 # SDD scratch & build artifacts
 .superpowers/
 docs/

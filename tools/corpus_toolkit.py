@@ -185,6 +185,41 @@ class Entry:
         return f"Entry({self.word}, {self.code}, {self.dict_name}:{self.line_num})"
 
 
+ADMISSION_ALLOW = "ALLOW"
+ADMISSION_BLOCK = "BLOCK"
+ADMISSION_REVIEW = "REVIEW"
+
+
+def decide_admission(word: str, candidates: List["Entry"]) -> Tuple[str, str]:
+    """加词准入闸门纯决策函数（自动上屏红线）。
+
+    规则（对齐 docs/16 战略裁决）：
+    - 目标编码没有任何候选：绝对空码，放行（新增词可四键自动上屏）；
+    - 词条已存在于该编码：幂等，放行；
+    - 该编码只有 1 个候选：新增会让该码从「四键即上屏」退化为菜单码，拦截；
+    - 该编码已是菜单码：新增只会加大候选噪音，交人工复核。
+    """
+    for entry in candidates:
+        if entry.word == word:
+            return ADMISSION_ALLOW, "词条已存在，幂等放行"
+
+    if not candidates:
+        return ADMISSION_ALLOW, "绝对空码，新增词可四键自动上屏"
+
+    if len(candidates) == 1:
+        incumbent = candidates[0]
+        return (
+            ADMISSION_BLOCK,
+            f"该码已有唯一候选「{incumbent.word}」({incumbent.dict_name})，"
+            "新增会使自动上屏退化为菜单；如确需收录，应先做首选置换",
+        )
+
+    return (
+        ADMISSION_REVIEW,
+        f"该码已是菜单码（{len(candidates)} 个候选），新增会加大菜单噪音，需人工判断",
+    )
+
+
 class CorpusDatabase:
     """全库反查倒排索引与冲突检测系统"""
 
@@ -257,6 +292,20 @@ class CorpusDatabase:
         }
         return result
 
+    def assess_admission(self, word: str, target_dict: str = "") -> Dict[str, Any]:
+        """加词准入审计：计算编码并按「自动上屏红线」给出放行/拦截/复核结论。"""
+        code, secondary_code = self.encoder.encode(word, target_dict)
+        candidates = self.get_candidates(code)
+        verdict, reason = decide_admission(word, candidates)
+        return {
+            "word": word,
+            "code": code,
+            "secondary_code": secondary_code,
+            "candidates": candidates,
+            "verdict": verdict,
+            "reason": reason,
+        }
+
 
 def run_unit_tests():
     """自动化回归测试套件：验证算法确定性与已知标杆案例"""
@@ -322,11 +371,35 @@ def run_unit_tests():
 
     print("[PASS] 全库倒排索引与冲突探测器全部验证通过！\n")
 
+    # 5. 加词准入闸门测试（自动上屏红线：唯一码默认拒收第二候选）
+    from types import SimpleNamespace
+    fake = lambda w, d="flypy.primary": SimpleNamespace(word=w, dict_name=d)
+
+    verdict, _ = decide_admission("测试", [])
+    assert verdict == ADMISSION_ALLOW, f"空码应放行, 实际 {verdict}"
+
+    verdict, _ = decide_admission("微信", [fake("微信")])
+    assert verdict == ADMISSION_ALLOW, f"重复词条应放行, 实际 {verdict}"
+
+    verdict, _ = decide_admission("宝安", [fake("保安")])
+    assert verdict == ADMISSION_BLOCK, f"唯一码新增第二候选应拦截, 实际 {verdict}"
+
+    verdict, _ = decide_admission("测验", [fake("知识"), fake("只是")])
+    assert verdict == ADMISSION_REVIEW, f"菜单码新增应人工复核, 实际 {verdict}"
+
+    # 真实词库端到端
+    res = db.assess_admission("宝安")
+    assert res["code"] == "bcan" and res["verdict"] == ADMISSION_BLOCK, f"宝安应因 bcan 唯一候选被拦截: {res}"
+    res = db.assess_admission("微信")
+    assert res["verdict"] == ADMISSION_ALLOW, f"微信为既有词条应放行: {res}"
+    print("[PASS] 加词准入闸门（空码放行 / 唯一码拦截 / 菜单码复核）全部验证通过！\n")
+
 
 def main():
     parser = argparse.ArgumentParser(description="小鹤音形词库确定性分析与检测工具链")
     parser.add_argument("--test", action="store_true", help="执行内建自动化测试套件")
     parser.add_argument("--encode", nargs="+", help="计算一个或多个词汇的编码并显示冲突情况")
+    parser.add_argument("--guard", nargs="+", help="加词准入审计：按自动上屏红线判断新增词是否会破坏四码唯一上屏")
     parser.add_argument("--stats", action="store_true", help="打印当前词库总览统计信息")
     parser.add_argument("--scan-file", type=str, help="扫描文本文件中的词汇列表并输出冲突/空码报告")
     parser.add_argument("--output-empty", type=str, help="将扫描出的纯空码词条输出到指定文件")
@@ -362,6 +435,30 @@ def main():
                     print(f"  └─ 冲突前排: {cands_preview}")
             except Exception as e:
                 print(f"词汇: {w:<8} 错误: {e}")
+        return
+
+    if args.guard:
+        print("=== 加词准入审计（自动上屏红线） ===")
+        blocked = 0
+        for w in args.guard:
+            try:
+                res = db.assess_admission(w)
+            except Exception as e:
+                print(f"BLOCK  {w:<8} 错误: {e}")
+                blocked += 1
+                continue
+            cands = res["candidates"]
+            print(f"{res['verdict']:<6} {w:<8} 编码 {res['code']:<6} 现有候选 {len(cands)}")
+            print(f"  └─ {res['reason']}")
+            if cands:
+                preview = ", ".join(f"{c.word}({c.dict_name})" for c in cands[:5])
+                print(f"  └─ 现有: {preview}")
+            if res["verdict"] != ADMISSION_ALLOW:
+                blocked += 1
+        if blocked:
+            print(f"\n共 {blocked} 个词未获放行（BLOCK 需首选置换，REVIEW 需人工判断）。")
+            sys.exit(1)
+        print("\n全部放行。")
         return
 
     if args.scan_file:
