@@ -7,7 +7,7 @@
 #
 ---
 name: flypy.places
-version: "2.1"
+version: "2.2"
 sort: original
 use_preset_vocabulary: false
 ...
@@ -72,7 +72,6 @@ use_preset_vocabulary: false
 安康	ankh
 垵口	ankz
 安岭	anlk
-安陆	anlq
 安龙	anls
 安陆	anlu
 安民	anmb
@@ -197,7 +196,6 @@ use_preset_vocabulary: false
 蚌埠	bhbu
 滨海工业城	bhgi
 滨海经济开发区	bhjq
-蚌山	bhuj
 滨海新	bhxb
 滨海新区	bhxq
 碧湖	bihu
@@ -302,7 +300,6 @@ use_preset_vocabulary: false
 蔡源	cdyr
 册亨	cehg
 策勒	cele
-策勒	celw
 曹妃甸	cfdm
 曹妃甸区	cfdq
 岑港	cfgh
@@ -327,7 +324,6 @@ use_preset_vocabulary: false
 从化	cshx
 从江	csjl
 丛台	cstd
-枞阳	csyh
 沧州渤海新区	cvbq
 沧州高新技术产业开发	cvgf
 沧州高新技术产业开发区	cvgq
@@ -444,16 +440,11 @@ use_preset_vocabulary: false
 德兴	dexk
 德阳	deyh
 登封	dgfg
-澄海	dghd
-澄城	dgig
-澄江	dgjl
 磴口	dgkz
-澄迈	dgmd
 灯塔	dgta
-澄潭	dgtj
 大港头镇	dgtv
 大港头	dgtz
-澄照	dgvc
+澄照	igvc
 邓州	dgvz
 德宏傣族景颇族自治州	dhdv
 当湖	dhhu
@@ -486,7 +477,6 @@ use_preset_vocabulary: false
 石笕	uijm
 丹江口市	djku
 丹棱	djlg
-丹棱	djlk
 石梁	uill
 石练	uilm
 石龙	uils
@@ -564,7 +554,6 @@ use_preset_vocabulary: false
 段塘	drth
 端州	drvz
 大若岩镇	dryv
-东阿	dsaa
 东安	dsan
 东案	dsan
 东宝	dsbc
@@ -611,7 +600,6 @@ use_preset_vocabulary: false
 东沙	dsua
 东胜	dsug
 东山	dsuj
-东栅	dsuj
 东栅	dsva
 东至	dsvi
 东洲	dsvz
@@ -794,7 +782,6 @@ use_preset_vocabulary: false
 浮石	fuui
 福鼎	fudk
 扶风	fufg
-佛冈	fugh
 福贡	fugs
 府谷	fugu
 扶沟	fugz
@@ -1024,7 +1011,6 @@ use_preset_vocabulary: false
 古山	guuj
 固镇	guvf
 古丈	guvh
-贾汪	guwh
 古县	guxm
 古冶	guye
 固阳	guyh
@@ -1202,7 +1188,6 @@ use_preset_vocabulary: false
 红河哈尼族彝族	hhhz
 杭锦	hhjb
 杭坪	hhpk
-行唐	hhth
 航头	hhtz
 怀化市洪江管理	hhul
 怀化市洪江管理区	hhuq
@@ -1501,7 +1486,6 @@ use_preset_vocabulary: false
 成安	igan
 城北	igbw
 承德	igde
-称多	igdo
 城东	igds
 成都	igdu
 城关	iggr
@@ -1869,7 +1853,6 @@ use_preset_vocabulary: false
 介休	jpxq
 揭阳	jpyh
 九堡	jqbc
-九堡	jqbu
 旧馆	jqgr
 九和	jqhe
 九华	jqhx
@@ -2082,13 +2065,10 @@ use_preset_vocabulary: false
 涞源	ldyr
 乐安	lean
 乐都	ledu
-乐都	ledz
 乐成	leig
 乐昌	leih
 乐陵	lelk
 乐平	lepk
-乐清	leqk
-乐亭	letk
 乐山	leuj
 乐至	levi
 乐业	leye
@@ -2266,22 +2246,16 @@ use_preset_vocabulary: false
 兰坪白族普米族	lpbz
 烈山	lpuj
 六盘水市	lpuu
-六安	lqan
 留坝	lqba
-陆埠	lqbu
+陆埠	lubu
 柳北	lqbw
 六石	lqui
 柳峰	lqfg
-陆丰	lqfg
-六合	lqhe
 柳河	lqhe
-陆河	lqhe
 六横	lqhg
 柳城	lqig
-陆川	lqir
 柳江	lqjl
 柳林	lqlb
-陆良	lqll
 柳南	lqnj
 柳市	lqui
 柳州	lqvz
@@ -2463,7 +2437,6 @@ use_preset_vocabulary: false
 民勤	mbqb
 闽清	mbqk
 民权	mbqr
-闵行	mbxk
 岷县	mbxm
 民乐	mbyt
 马边彝族自治县	mbyx
@@ -2510,7 +2483,6 @@ use_preset_vocabulary: false
 沐尘畲族乡	miux
 沐尘畲族	miuz
 米脂	mivi
-泌阳	miyh
 米易	miyi
 密云	miyy
 墨江哈尼族自治县	mjhx
@@ -2552,12 +2524,11 @@ use_preset_vocabulary: false
 门头沟区	mtgq
 门头沟	mtgz
 牡丹	mudj
-牟定	mudk
+牟定	mzdk
 沐川	muir
 木兰	mulj
 穆棱	mulk
 牟平	mupk
-牟山	muuj
 米市巷街道	muxd
 牧野	muye
 墨竹工卡	mvgk
@@ -2781,7 +2752,6 @@ use_preset_vocabulary: false
 平利	pkli
 平凉	pkll
 平罗	pklo
-平陆	pklq
 平陆	pklu
 平鲁	pklu
 屏门	pkmf
@@ -2814,7 +2784,6 @@ use_preset_vocabulary: false
 偏关	pmgr
 皤滩	potj
 坡头	potz
-泊头	potz
 鄱阳	poyh
 普陀山镇	ptuv
 普安	puan
@@ -3217,7 +3186,6 @@ use_preset_vocabulary: false
 绥江	svjl
 宿州经济技术开发区	svjq
 绥棱	svlg
-绥棱	svlk
 宿州马鞍山现代产业园区	svmq
 宿州马鞍山现代产业园	svmy
 睢宁	svnk
@@ -3244,7 +3212,6 @@ use_preset_vocabulary: false
 四子王旗	szwq
 塔石	taui
 塔河	tahe
-漯河	tahe
 塔城	taig
 塔山	tauj
 洮北	tcbw
@@ -3316,7 +3283,6 @@ use_preset_vocabulary: false
 坛石	tjui
 坦洪	tjhs
 郯城	tjig
-覃塘	tjth
 坦头	tjtz
 檀溪	tjxi
 亭湖	tkhu
@@ -3359,7 +3325,6 @@ use_preset_vocabulary: false
 天水	tmuv
 天目山镇	tmuv
 天镇	tmvf
-天长	tmvh
 天柱	tmvu
 天心	tmxb
 天涯	tmya
@@ -3665,7 +3630,6 @@ use_preset_vocabulary: false
 诏安	vcan
 肇东	vcds
 昭化	vchx
-昭觉	vcjn
 昭觉	vcjt
 赵家	vcjx
 召陵	vclk
@@ -3721,27 +3685,15 @@ use_preset_vocabulary: false
 章村	vhcy
 章旦	vhdj
 张店	vhdm
-长丰	vhfg
-长葛	vhge
 章贡	vhgs
-长海	vhhd
-长宁	vhnk
 漳平	vhpk
 漳浦	vhpu
 掌起	vhqi
-长庆	vhqk
-长清	vhqk
 章丘	vhqq
-长台	vhtd
-长泰	vhtd
-长塘	vhth
 樟潭	vhtj
 丈亭	vhtk
-长涂	vhtu
-长山	vhuj
 樟树	vhuu
 章水	vhuv
-长顺	vhuy
 章镇	vhvf
 漳州	vhvz
 张湾	vhwj
@@ -3750,7 +3702,6 @@ use_preset_vocabulary: false
 樟溪	vhxi
 漳县	vhxm
 张掖	vhye
-长垣	vhyr
 长子	vhzi
 志丹	vidj
 治多	vido
@@ -3821,7 +3772,6 @@ use_preset_vocabulary: false
 长三角商贸园区	vsjq
 钟楼	vslz
 中牟	vsmu
-中牟	vsmz
 中宁	vsnk
 中泰	vstd
 中山	vsuj
@@ -3984,7 +3934,6 @@ use_preset_vocabulary: false
 威宁彝族回族苗族	wnyz
 卧龙	wols
 沃洲	wovz
-涡阳	woyh
 五通桥	wtqn
 五通桥区	wtqq
 五台山风景名胜区	wtuq
@@ -4445,7 +4394,6 @@ use_preset_vocabulary: false
 峡江	xxjl
 新乡经济技术开发区	xxjq
 峡口	xxkz
-下陆	xxlq
 下陆	xxlu
 夏履	xxlv
 厦门	xxmf
@@ -4680,7 +4628,6 @@ use_preset_vocabulary: false
 袁花	yrhx
 源城	yrig
 沅江	yrjl
-元觉	yrjn
 元觉	yrjt
 沅陵	yrlk
 元谋	yrmz
