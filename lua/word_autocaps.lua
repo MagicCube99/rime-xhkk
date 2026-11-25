@@ -1,42 +1,57 @@
 -- 输入的内容大写前2个字符，自动转小写词条为全词大写；大写第一个字符，自动转写小写词条为首字母大写
 
+-- 1. 寄存器级局部化缓存全局函数与类型（消除全局表 GETTABUP 哈希开销）
+local string_find = string.find
+local string_len = string.len
+local string_sub = string.sub
+local table_insert = table.insert
+local Candidate = Candidate
+local ShadowCandidate = ShadowCandidate
+
+-- 2. 静态表对象池复用（彻底消除循环向堆申请表引发的 GC 抖动）
+local u_cands_pool = {}
+local function clear_pool(t)
+    for i = #t, 1, -1 do t[i] = nil end
+end
+
 local function autocaps_filter(input, env)
     local preedit_code = env.engine.context:get_commit_text()
     -- 性能守卫：若未以大写字母开头（绝大多数日常小写中文输入），直接极速放行
-    if not preedit_code or not string.find(preedit_code, "^%u") then
+    if not preedit_code or not string_find(preedit_code, "^%u") then
         for cand in input:iter() do
             yield(cand)
         end
         return
     end
 
-    local is_double_upper = string.find(preedit_code, "^%u%u") ~= nil
-    local preedit_len = string.len(preedit_code)
-    local u_cands = {}
+    local is_double_upper = string_find(preedit_code, "^%u%u") ~= nil
+    local preedit_len = string_len(preedit_code)
+    clear_pool(u_cands_pool)
 
     for cand in input:iter() do
         local text = cand.text
-        if is_double_upper and string.find(text, "^%l%l.*") then
-            if string.len(text) == 2 then
+        if is_double_upper and string_find(text, "^%l%l.*") then
+            if string_len(text) == 2 then
                 local cand_2 = ShadowCandidate(cand, cand.type, preedit_code, "", false)
                 yield(cand_2)
             else
                 local cand_u = Candidate("cap", 0, preedit_len, text:upper(), "~AU")
-                table.insert(u_cands, cand_u)
+                table_insert(u_cands_pool, cand_u)
             end
-        elseif string.find(text, "^%l+$") then
-            local suffix = string.sub(text, preedit_len + 1)
+        elseif string_find(text, "^%l+$") then
+            local suffix = string_sub(text, preedit_len + 1)
             local cand_t = ShadowCandidate(cand, cand.type, preedit_code .. suffix, "~AT", false)
-            table.insert(u_cands, cand_t)
+            table_insert(u_cands_pool, cand_t)
         else
             yield(cand)
         end
 
-        if #u_cands >= 666 then break end
+        if #u_cands_pool >= 666 then break end
     end
 
-    for _, cand in ipairs(u_cands) do
-        yield(cand)
+    -- 数字原生循环（快于 ipairs 迭代器）
+    for i = 1, #u_cands_pool do
+        yield(u_cands_pool[i])
     end
 end
 

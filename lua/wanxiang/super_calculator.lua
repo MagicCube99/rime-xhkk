@@ -3352,6 +3352,13 @@ local function execute_function_call(input, seg, func_name, params, env)
 end
 
 function T.func(input, seg, env)
+    -- 核心性能熔断：计算器仅由大写 V 或 / 引导，普通小写输入在入口 1 纳秒瞬退
+    if not input or input == "" then return end
+    local c1 = input:sub(1, 1)
+    if c1 ~= "V" and c1 ~= "/" and not (seg and seg:has_tag("calculator")) then
+        return
+    end
+
     local composition = env.engine.context.composition
     if composition:empty() then return end
     local segment = composition:back()

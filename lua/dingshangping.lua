@@ -9,6 +9,11 @@
 local P = {}
 
 function P.init(env)
+    -- 开启 Lua 5.4 原生分代垃圾回收（新生代快速释放）
+    if collectgarbage then
+        pcall(collectgarbage, "generational")
+    end
+
     local config = env.engine.schema.config
     env.enabled = config:get_bool("dingshangping/enable")
     if env.enabled == nil then
@@ -20,6 +25,12 @@ function P.func(key, env)
     if not env.enabled then return 2 end -- 2 = kNoop
     if key:release() or key:alt() or key:ctrl() then return 2 end
 
+    -- 性能优化：直接使用原生整数 keycode (97='a', 122='z')，0 堆内存分配，1 纳秒判断
+    local kc = key.keycode
+    if kc < 97 or kc > 122 then
+        return 2
+    end
+
     local context = env.engine.context
     -- 方案开关拦截：若关闭了顶屏开关，微秒级直接放行
     if not context:get_option("dingshangping") then return 2 end
@@ -29,13 +40,6 @@ function P.func(key, env)
     local input = context.input
     -- 仅对 4 位纯字母编码生效（排除所有带前缀、符号、特殊引导的长编码或短编码）
     if #input ~= 4 or not input:match("^[a-z]+$") then
-        return 2
-    end
-
-    local key_repr = key:repr()
-    -- 仅当按下的是小写英文字母 [a-z]（即新词的起始声母）时触发顶屏
-    -- 空格、分号、数字、标点、退格、回车等直接放行给系统正常处理
-    if #key_repr ~= 1 or not key_repr:match("^[a-z]$") then
         return 2
     end
 

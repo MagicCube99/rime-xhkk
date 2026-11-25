@@ -537,6 +537,10 @@ local function get_number_trigger(env)
 end
 
 local function number_conversion(input, seg, env)
+    if not input or input == "" then return end
+    -- 性能极速熔断：大写数字转换仅由大写 R 引导，普通输入 1 字节整数判定瞬退
+    if input:byte(1) ~= 82 then return end -- 82 == 'R'
+
     local trigger = get_number_trigger(env)
     if trigger == "" or input:sub(1, 1) ~= trigger then
         return

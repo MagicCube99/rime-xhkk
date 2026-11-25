@@ -610,6 +610,12 @@ local function is_single_lowercase_letter(text)
 end
 
 function P.func(key_event, env)
+    -- 核心性能熔断：所有调频快捷键均包含 Ctrl 键 (Control+j/k/l/p)
+    -- 无 Ctrl 键、按键释放、或 Alt 组合键的常规打字 1 纳秒直接放行，杜绝每键产生无谓 C++ 栈开销
+    if not key_event:ctrl() or key_event:release() or key_event:alt() then
+        return wanxiang.RIME_PROCESS_RESULTS.kNoop
+    end
+
     local context = env.engine.context
     local code = key_event.keycode
     local key_repr = key_event:repr()
